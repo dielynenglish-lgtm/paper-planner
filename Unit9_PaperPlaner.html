@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Paper Planners Listening Game</title>
+<style>
+:root{--bg:#fbf3e4;--card:#fff;--ink:#3b2f24;--mute:#7a6a58;--acc:#d9772b;--acc2:#2f7d6d;--ok:#2e9d5b;--bad:#d64545;--line:#e6d7bd;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241c15;--card:#33281f;--ink:#f6ead8;--mute:#bba98f;--acc:#f0924a;--acc2:#5cc2ad;--line:#4a3a2c}}
+:root[data-theme="dark"]{--bg:#241c15;--card:#33281f;--ink:#f6ead8;--mute:#bba98f;--acc:#f0924a;--acc2:#5cc2ad;--line:#4a3a2c}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS",system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:560px;padding:18px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 4px 0 var(--line)}
+h1{font-size:1.6rem;margin:0 0 6px;color:var(--acc)}
+h2{font-size:1.15rem;margin:0 0 14px}
+p{line-height:1.5;margin:8px 0}
+.mute{color:var(--mute);font-size:.9rem}
+button{font:inherit;cursor:pointer;border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;padding:12px 16px}
+.big{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700;width:100%;margin-top:12px;font-size:1.05rem}
+.big:disabled{opacity:.45;cursor:not-allowed}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-weight:700}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.bar div{height:100%;background:var(--acc2);width:0;transition:width .3s}
+.listen{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;margin:6px 0 16px}
+.play{background:var(--acc2);color:#fff;border-color:var(--acc2);font-weight:700;font-size:1.1rem;padding:16px 22px;border-radius:50px}
+.play.on{animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;font-size:1rem}
+.opt:hover:not(:disabled){border-color:var(--acc)}
+.opt.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.opt.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.script{background:var(--bg);border-radius:12px;padding:12px;margin-top:12px;font-size:.95rem}
+.hl{color:var(--acc);font-weight:700}
+.fb{font-weight:700;margin-top:10px}
+.stars{font-size:2.4rem;text-align:center;margin:10px 0}
+.speed{font-size:.85rem;color:var(--mute)}
+select{font:inherit;padding:6px 8px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink);max-width:100%}
+.good{border-color:var(--ok);background:rgba(46,157,91,.22)}.wrong{border-color:var(--bad);background:rgba(214,69,69,.22)}
+.item{margin:14px 0;line-height:2}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+var Q=[
+{t:"Paragraph 1: Phones and paper",s:"Many people feel their phones are full of notifications and to-do lists. But a report says 64 percent of people around the world still use physical planners or journals. When they want to keep an idea, they often put it down on paper.",q:"What does the report say?",a:"Many people still use paper planners.",w:["Nobody uses paper planners now.","Only students use paper planners.","Phones have no to-do lists."],k:["physical","put down"]},
+{t:"Paragraph 2: Commonplace books",s:"In the 17th and 18th centuries, European scholars carried notebooks called commonplace books. They wrote inspiring quotations and favorite poems in them. The goal was not to track appointments. It was to collect ideas worth remembering.",q:"What was the goal of a commonplace book?",a:"To collect ideas worth remembering.",w:["To track appointments.","To count money.","To draw maps."],k:["inspiring","quotations","appointments"]},
+{t:"Paragraph 3: Not only Europe",s:"Writing things down was not only a European habit. Chinese officials and Japanese scholars carried small notebooks inside their robes. They wrote down passing thoughts before the thoughts disappeared. The notebooks looked different, but they had the same purpose.",q:"Where did Chinese officials and Japanese scholars keep their notebooks?",a:"Inside their robes.",w:["In their bags.","On their desks.","In their shoes."],k:["notebooks"]},
+{t:"Paragraph 4: Planners and technology",s:"Planners became important during the Industrial Revolution, when factories and railways ran on strict schedules. Lord Chesterfield told his son never to put off until tomorrow what he could do today. Later, paper planners gave way to digital ones, and now many people use their phones.",q:"What happened to paper planners as technology advanced?",a:"They gradually gave way to digital ones.",w:["They became more expensive.","They were used in factories only.","They became very popular."],k:["Revolution","put off","gave way to"]},
+{t:"Paragraph 5: Paper fans",s:"Many people still love paper. They fill their planners with drawings, stickers and travel memories. These fans say writing by hand helps them remember things better, and research backs them up.",q:"What do paper fans say about writing by hand?",a:"It helps them remember things better.",w:["It is faster than typing.","It costs less than a phone.","It makes their planner heavy."],k:["research","backs them up"]},
+{t:"Paragraph 6: A quiet reset",s:"Studies show that handwriting activates more of the brain than typing does. A notebook gives us a quiet space to slow down and think. In a busy world, picking up a pen may be exactly the reset our brains need.",q:"What does the writer suggest?",a:"Picking up a pen may help our brains reset.",w:["We should throw away our phones.","Typing is better for memory.","Notebooks are too quiet."],k:["handwriting","activates","precisely"]}
+];
+var app=document.getElementById("app"),i=0,score=0,streak=0,best=0,plays=0,speaking=false,rate=0.9,answered=false,order=[];
+var canSpeak="speechSynthesis" in window;
+function shuffle(a){a=a.slice();for(var n=a.length-1;n>0;n--){var j=Math.floor(Math.random()*(n+1));var t=a[n];a[n]=a[j];a[j]=t}return a}
+function start(){i=0;score=0;streak=0;best=0;showQ()}
+function home(){
+ app.innerHTML='<div class="card"><h1>🎧 Listen &amp; Choose</h1><p>Topic: <b>The Enduring Appeal of Paper Planners</b></p><p>Listen to each paragraph, then pick the best answer. You can listen again, but fast answers earn more stars!</p><p class="mute">6 questions · +10 points each · +5 bonus for a first-listen answer · streak bonus</p>'+(canSpeak?'':'<p class="mute">Audio is not supported on this device, so the script will be shown instead.</p>')+'<button class="big" id="go">Start the game</button></div>';
+ document.getElementById("go").onclick=start}
+function showQ(){
+ var d=Q[i];plays=0;answered=false;
+ order=shuffle([d.a].concat(d.w));
+ var h='<div class="card"><div class="top"><span>Question '+(i+1)+' / '+Q.length+'</span><span>⭐ '+score+' &nbsp; 🔥 '+streak+'</span></div><div class="bar"><div style="width:'+(i/Q.length*100)+'%"></div></div><h2>'+d.t+'</h2>';
+ if(canSpeak){h+='<div class="listen"><button class="play" id="play">▶ Listen</button><button id="slow">🐢 Slow</button></div><div class="speed" id="spd" style="text-align:center">Speed: normal</div>'}
+ else{h+='<div class="script">'+d.s+'</div>'}
+ h+='<h2 style="margin-top:16px">'+d.q+'</h2><div id="opts"></div><div id="fb"></div><div id="more"></div></div>';
+ app.innerHTML=h;
+ var o=document.getElementById("opts");
+ order.forEach(function(t){var b=document.createElement("button");b.className="opt";b.textContent=t;b.disabled=canSpeak;b.onclick=function(){pick(b,t)};o.appendChild(b)});
+ if(canSpeak){
+  document.getElementById("play").onclick=function(){speak(1)};
+  document.getElementById("slow").onclick=function(){speak(0.65)}}
+}
+function speak(r){
+ speechSynthesis.cancel();
+ var u=new SpeechSynthesisUtterance(Q[i].s);u.lang="en-US";u.rate=r;
+ var vs=speechSynthesis.getVoices().filter(function(v){return v.lang&&v.lang.indexOf("en")===0});
+ if(vs.length)u.voice=vs[0];
+ var p=document.getElementById("play");
+ u.onstart=function(){p.classList.add("on")};
+ u.onend=u.onerror=function(){p.classList.remove("on")};
+ plays++;
+ document.getElementById("spd").textContent="Speed: "+(r<1&&r<0.8?"slow":"normal")+" · played "+plays+" time"+(plays>1?"s":"");
+ document.querySelectorAll(".opt").forEach(function(b){if(!answered)b.disabled=false});
+ speechSynthesis.speak(u)}
+function pick(b,t){
+ if(answered)return;answered=true;speechSynthesis&&speechSynthesis.cancel();
+ var d=Q[i],ok=t===d.a,fb=document.getElementById("fb");
+ document.querySelectorAll(".opt").forEach(function(x){x.disabled=true;if(x.textContent===d.a)x.classList.add("ok")});
+ if(ok){streak++;if(streak>best)best=streak;var pts=10+(plays<=1?5:0)+(streak>=3?5:0);score+=pts;
+  fb.innerHTML='<p class="fb" style="color:var(--ok)">✅ Great listening! +'+pts+' points</p>'}
+ else{streak=0;b.classList.add("bad");fb.innerHTML='<p class="fb" style="color:var(--bad)">❌ Not quite. The answer is shown in green.</p>'}
+ var s=d.s;d.k.forEach(function(w){s=s.split(w).join('<span class="hl">'+w+'</span>')});
+ document.getElementById("more").innerHTML='<div class="script"><b>Script:</b> '+s+'</div><button class="big" id="next">'+(i<Q.length-1?"Next →":"See my result")+'</button>';
+ document.getElementById("next").onclick=function(){i++;if(i<Q.length)showQ();else end()}}
+function end(){
+ var max=Q.length*25,st=score>=max*0.8?3:score>=max*0.5?2:1;save("t1",score,max);
+ var msg=st===3?"Amazing ears!":st===2?"Nice job!":"Good try. Listen again and improve!";
+ app.innerHTML='<div class="card"><h1>🏁 Finished!</h1><div class="stars">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div><p style="text-align:center"><b>'+msg+'</b></p><p style="text-align:center">Score: <b>'+score+'</b> points · Best streak: <b>'+best+'</b></p><p class="mute" id="sv"></p><button class="big" id="again">Play again</button><button class="big" id="mn" style="background:var(--acc2);border-color:var(--acc2)">Back to menu</button></div>';
+ document.getElementById("again").onclick=start;document.getElementById("mn").onclick=menu}
+if(canSpeak)speechSynthesis.onvoiceschanged=function(){};
+var V=[
+{s:"That old bridge is an ___ symbol of our town.",a:"enduring"},
+{s:"A smart ___ compares prices before buying anything.",a:"consumer"},
+{s:"I keep a ___ copy of my notes, not only a file on my phone.",a:"physical"},
+{s:"Her speech was so ___ that everyone wanted to help.",a:"inspiring"},
+{s:"When you use the writer’s exact words, put them in a ___.",a:"quotation"},
+{s:"I have a dentist ___ at 4 p.m. tomorrow.",a:"appointment"},
+{s:"After the trip, she wrote a short ___ about what she learned.",a:"reflection"},
+{s:"The Industrial ___ changed the way people worked.",a:"revolution"},
+{s:"His ___ is hard to read because he writes very fast.",a:"handwriting"},
+{s:"The train leaves at ___ 8:15, not one minute later.",a:"precisely"}];
+var G=[
+{s:"She quickly ___ her ideas in a notebook so she would not forget.",o:["put down","sum up","put off","back up"],a:"put down"},
+{s:"The teacher asked us to ___ the article in three sentences.",o:["give way to","sum up","put off","put down"],a:"sum up"},
+{s:"Don’t ___ your homework until tomorrow.",o:["put off","back up","sum up","put down"],a:"put off"},
+{s:"Paper planners are slowly ___ digital ones.",o:["backing up","giving way to","putting off","summing up"],a:"giving way to"},
+{s:"Do you have any facts to ___ your opinion?",o:["put down","put off","back up","sum up"],a:"back up"},
+{s:"At the end of the meeting, the manager ___ the next steps.",o:["put off","summed up","gave way to","backed up"],a:"summed up"},
+{s:"The game was ___ until tomorrow because of the rain.",o:["put off","summed up","put down","backed up"],a:"put off"},
+{s:"After many years, the old roads ___ new highways.",o:["put down","backed up","gave way to","summed up"],a:"gave way to"},
+{s:"The police were called to ___ the violent protest.",o:["put down","sum up","back up","give way to"],a:"put down"},
+{s:"___, we need to focus on the most important problems first.",o:["To put off","To back up","To sum up","To put down"],a:"To sum up"}];
+function menu(){
+ app.innerHTML='<div class="card"><h1>🎧 Paper Planners</h1><p class="mute">Unit 9 · Choose a test</p><input id="nm" placeholder="Type your name first" maxlength="40" style="width:100%;font:inherit;padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--card);color:var(--ink)"><p class="mute" id="st"></p><button class="big" id="m1">Test I · Listening (6 questions)</button><button class="big" id="m2" style="background:var(--acc2);border-color:var(--acc2)">Test II · Vocabulary (10 questions)</button><button class="big" id="m3" style="background:#8a5cc2;border-color:#8a5cc2">Test III · Language Spotlight dropdowns (10 items)</button></div>';
+ var nm=document.getElementById("nm");try{nm.value=localStorage.getItem("pp_name")||""}catch(e){}
+ function need(f){return function(){var v=nm.value.trim();if(!v){nm.focus();nm.placeholder="Please type your name first!";return}NAME=v;try{localStorage.setItem("pp_name",v)}catch(e){}f()}}
+ document.getElementById("m1").onclick=need(home);document.getElementById("m2").onclick=need(t2);document.getElementById("m3").onclick=need(t3);updMenu()}
+function fin(name,sc,max){save(name==="Test II"?"t2":"t3",sc,max);
+ var st=sc>=max*0.8?3:sc>=max*0.5?2:1;
+ app.innerHTML='<div class="card"><h1>🏁 '+name+' finished!</h1><div class="stars">'+"⭐".repeat(st)+"☆".repeat(3-st)+'</div><p style="text-align:center">Score: <b>'+sc+' / '+max+'</b></p><p class="mute" id="sv"></p><button class="big" id="r">Try again</button><button class="big" id="mn" style="background:var(--acc2);border-color:var(--acc2)">Back to menu</button></div>';
+ document.getElementById("r").onclick=name==="Test II"?t2:t3;document.getElementById("mn").onclick=menu}
+function t2(){
+ var n=0,sc=0;
+ function show(){
+  var it=V[n],ans=false;
+  app.innerHTML='<div class="card"><div class="top"><span>Test II · '+(n+1)+' / '+V.length+'</span><span>⭐ '+sc+'</span></div><div class="bar"><div style="width:'+(n/V.length*100)+'%"></div></div><h2>Choose the best word</h2><p style="font-size:1.1rem">'+it.s.replace("___","<b>_____</b>")+'</p><div id="o"></div><div id="f"></div></div>';
+  var opts=shuffle([it.a].concat(shuffle(V.filter(function(x){return x.a!==it.a}).map(function(x){return x.a})).slice(0,3)));
+  opts.forEach(function(t){
+   var b=document.createElement("button");b.className="opt";b.textContent=t;
+   b.onclick=function(){
+    if(ans)return;ans=true;var ok=t===it.a;
+    if(ok)sc+=10;else b.classList.add("bad");
+    document.querySelectorAll(".opt").forEach(function(x){x.disabled=true;if(x.textContent===it.a)x.classList.add("ok")});
+    document.getElementById("f").innerHTML='<p class="fb" style="color:var(--'+(ok?'ok':'bad')+')">'+(ok?"✅ Correct! +10":"❌ The answer is “"+it.a+"”.")+'</p><button class="big" id="nx">'+(n<V.length-1?"Next →":"See my result")+'</button>';
+    document.getElementById("nx").onclick=function(){n++;if(n<V.length)show();else fin("Test II",sc,V.length*10)}};
+   document.getElementById("o").appendChild(b)})}
+ show()}
+function t3(){
+ var h='<div class="card"><h1 style="font-size:1.3rem">Test III · Language Spotlight</h1><p class="mute">Choose the correct phrase from each dropdown, then press Check.</p>';
+ G.forEach(function(g,k){
+  var parts=g.s.split("___");
+  var sel='<select id="s'+k+'"><option value="">Choose…</option>'+g.o.map(function(x){return '<option>'+x+'</option>'}).join("")+'</select>';
+  h+='<div class="item">'+(k+1)+'. '+parts[0]+sel+parts[1]+'</div>'});
+ h+='<div id="res"></div><button class="big" id="chk">Check my answers</button><button class="big" id="mn" style="background:var(--acc2);border-color:var(--acc2)">Back to menu</button></div>';
+ app.innerHTML=h;
+ document.getElementById("mn").onclick=menu;
+ document.getElementById("chk").onclick=function(){
+  var sc=0,miss=0;
+  G.forEach(function(g,k){
+   var s=document.getElementById("s"+k);s.classList.remove("good","wrong");
+   if(s.value===g.a){sc+=10;s.classList.add("good")}else{s.classList.add("wrong");if(!s.value)miss++}});
+  var r=document.getElementById("res");
+  r.innerHTML='<p class="fb">Score: '+sc+' / '+G.length*10+' '+(sc===G.length*10?"🎉 Perfect!":"· Red items need another try.")+'</p><p class="mute" id="sv"></p>';save("t3",sc,G.length*10);
+  r.scrollIntoView({block:"nearest"})}}
+var SHEET_URL="PASTE_YOUR_WEB_APP_URL_HERE";
+var NAME="";
+var LAB={t1:"Test I",t2:"Test II",t3:"Test III"};
+function updMenu(){
+ var s=document.getElementById("st");if(!s)return;
+ s.textContent=SHEET_URL.indexOf("https://")===0?"\u2705 Your scores are sent to your teacher automatically.":"\u2139\ufe0f Your score will be shown at the end of each test.";}
+function setStatus(m){var s=document.getElementById("sst");if(s)s.textContent=m}
+function save(k,sc,mx){setTimeout(function(){doSave(k,sc,mx)},0)}
+function doSave(key,sc,max){
+ var d=new Date(),line=NAME+" \u00b7 "+LAB[key]+" \u00b7 "+sc+"/"+max+" \u00b7 "+d.toLocaleDateString();
+ var e=document.getElementById("sv");
+ if(e){
+  e.innerHTML="";
+  var p=document.createElement("div");p.className="script";p.textContent=line;
+  var cp=document.createElement("button");cp.textContent="\ud83d\udccb Copy result";cp.style.marginTop="8px";
+  cp.onclick=function(){try{navigator.clipboard.writeText(line);cp.textContent="Copied!"}catch(x){cp.textContent="Take a screenshot"}};
+  var st=document.createElement("p");st.className="mute";st.id="sst";
+  var sh=document.createElement("button");sh.textContent="\ud83d\udce4 Send to teacher";sh.style.cssText="margin:8px 0 0 8px;background:var(--acc2);color:#fff;border-color:var(--acc2)";
+  sh.onclick=function(){if(navigator.share){navigator.share({text:line}).catch(function(){})}else{window.open("https://line.me/R/share?text="+encodeURIComponent(line),"_blank")}};
+  e.appendChild(p);e.appendChild(cp);e.appendChild(sh);e.appendChild(st)}
+ if(SHEET_URL.indexOf("https://")!==0)return;
+ setStatus("Sending score\u2026");
+ fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({name:NAME,test:LAB[key],score:sc,max:max})})
+  .then(function(){setStatus("\u2705 Score sent to your teacher.")})
+  .catch(function(){setStatus("\u26a0\ufe0f Could not send. Please show the result above to your teacher.")})}
+menu();
+</script>
+</body>
+</html>
