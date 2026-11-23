@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GSAT-Style Listening Test: Educating AI (B2)</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1c2330;--card:#fff;--line:#d5dae3;--ac:#1f4e8c;--mut:#5b6575}
+@media(prefers-color-scheme:dark){:root{--bg:#12161d;--fg:#e6e9ef;--card:#1b212b;--line:#2f3846;--ac:#7fb0f0;--mut:#9aa5b5}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Georgia,"Noto Serif TC",serif;padding:0 14px 60px}
+main{max-width:720px;margin:0 auto}
+h1{font-size:1.5rem;margin:28px 0 4px}
+.sub{color:var(--mut);font-size:.9rem;margin:2px 0 12px}
+h2{font-size:1.05rem;margin:26px 0 2px;border-bottom:2px solid var(--ac);padding-bottom:3px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:10px 0}
+.q p{margin:0 0 6px}
+label{display:block;padding:3px 6px;border-radius:4px;cursor:pointer}
+label:hover{background:var(--bg)}
+button{font:inherit;background:var(--ac);color:var(--bg);border:0;border-radius:6px;padding:7px 16px;cursor:pointer}
+button.sec{background:none;color:var(--ac);border:1px solid var(--ac);padding:2px 12px;font-size:.88rem;margin-left:6px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.act{display:flex;gap:10px;margin-top:24px;align-items:center;flex-wrap:wrap}
+#done{display:none;margin-top:16px;padding:10px 14px;border:2px solid var(--ac);border-radius:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>Educating AI: GSAT-Style Listening Test</h1>
+<p class="sub">CEFR B2 · 10 items · Name: ____________________ Class: ______</p>
+<p class="sub">Press “Play” to listen (your browser’s voice is used; Chrome, Edge or Safari recommended). Each recording can be played <b>twice</b>. Items 1–4: choose the best response. Items 5–7: listen to the dialogue. Items 8–10: listen to one short talk.</p>
+<div id="t"></div>
+<div class="act"><button id="sub">Submit answers</button><button class="sec" id="rst">Reset</button></div>
+<div id="done" aria-live="polite"></div>
+</main>
+<script>
+const L="ABCD";
+const T8=["Good morning, everyone. Today's workshop is about becoming an AI trainer. These trainers review an AI's answers, find mistakes, and explain how to fix them. Two key skills are attention to detail, because one small error can ruin an otherwise good answer, and comfort with ambiguity, which means asking for help when a situation is unclear instead of making up new rules. Now, please sit with a partner and begin the first activity."];
+const S=[
+{s:["Could you recommend a good wine to go with this steak?"],q:"Choose the best response.",o:["Sure, a red wine would be perfect.","No, I’ve never been to a steak house.","Yes, the wine was delicious.","I paid by credit card."]},
+{s:["How long have you worked as a clinical consultant?"],q:"Choose the best response.",o:["At the hospital downtown.","Because I like helping people.","For about twenty years.","Twice a week by bus."]},
+{s:["Do you think AI will take over your job?"],q:"Choose the best response.",o:["Yes, I took it over yesterday.","I hope it will only handle the boring parts.","No, I have an interview tomorrow.","It was a long report."]},
+{s:["Why did the experiment fail?"],q:"Choose the best response.",o:["It was at the lab.","Next Monday morning.","By a team of five.","The dataset contained too many mistakes."]},
+{s:["I'm tired of grading these essays. Each one takes me almost twenty minutes.","Why not make a rubric? Then you'd know exactly what to look for, and grading would go faster.","Good idea. I'll write one tonight."],q:"What does the woman suggest?",o:["Asking students to grade each other","Making a list of grading standards","Giving fewer essays","Hiring an assistant"]},
+{s:["Did you see the news about that start-up valued at ten billion dollars?","Yes! And the CEO is only twenty-two.","Amazing. I can barely manage my own schedule."],q:"What are the speakers mainly talking about?",o:["A new school policy","A stock market crash","A woman’s busy schedule","A young CEO’s success"]},
+{s:["Which job do you think a computer can't do?","Making people laugh. Humor depends on personal taste, so it's hard to teach a machine.","True. Last week I told a joke and half the room just stared."],q:"What does the woman say about humor?",o:["It is easy to teach.","It is subjective.","It is boring for machines.","It is only for experts."]},
+{s:T8,q:"Which skill means noticing a single small error?",o:["Attention to detail","Comfort with ambiguity","Written clarity","Critical thinking"]},
+{s:T8,q:"What should trainers do when a situation is unclear?",o:["Make up new rules","Ignore the problem","Ask for help","Delete the answer"]},
+{s:T8,q:"Where is this talk most likely taking place?",o:["At a restaurant","At a hospital","At a bank","At a training workshop"]}];
+const plays={};
+const t=document.getElementById("t");
+S.forEach((it,i)=>{
+  if(i===0)t.insertAdjacentHTML("beforeend","<h2>Items 1–4: Short responses</h2>");
+  if(i===4)t.insertAdjacentHTML("beforeend","<h2>Items 5–7: Dialogues</h2>");
+  if(i===7)t.insertAdjacentHTML("beforeend","<h2>Items 8–10: Talk (one recording for all three items)</h2>");
+  const showBtn=i<=6||i===7;
+  const q=document.createElement("div");q.className="q";
+  q.innerHTML=`<p><b>${i+1}.</b> ${i<4?"":it.q}${showBtn?`<button type="button" class="sec" data-i="${i}">▶ Play (2 left)</button>`:""}${i<4?" (Listen and choose.)":""}</p>`+
+   it.o.map((x,j)=>`<label><input type="radio" name="n${i}" value="${j}"> (${L[j]}) ${x}</label>`).join("");
+  t.appendChild(q);
+});
+t.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-i]");if(!b)return;
+  if(!("speechSynthesis" in window)){alert("Speech is not supported in this browser.");return}
+  const i=+b.dataset.i,key=S[i].s.join("|"),n=plays[key]||0;
+  if(n>=2)return;plays[key]=n+1;
+  b.textContent=n+1>=2?"▶ Play (0 left)":"▶ Play (1 left)";if(n+1>=2)b.disabled=true;
+  speechSynthesis.cancel();
+  S[i].s.forEach((x,k)=>{const u=new SpeechSynthesisUtterance(x);u.lang="en-US";u.rate=.9;u.pitch=S[i].s.length>1&&k%2?1.35:1;speechSynthesis.speak(u)});
+});
+const d=document.getElementById("done");
+document.getElementById("sub").onclick=()=>{
+  const a=document.querySelectorAll("input:checked").length;
+  d.style.display="block";
+  d.textContent=a<10?`You answered ${a} of 10 items. You can still change or complete your answers.`:"All 10 items answered. Your answers have been recorded. Please hand in your work.";
+};
+document.getElementById("rst").onclick=()=>{
+  speechSynthesis.cancel();
+  document.querySelectorAll("input:checked").forEach(x=>x.checked=false);
+  Object.keys(plays).forEach(k=>delete plays[k]);
+  document.querySelectorAll("button[data-i]").forEach(b=>{b.disabled=false;b.textContent="▶ Play (2 left)"});
+  d.style.display="none";scrollTo(0,0);
+};
+</script>
+</body>
+</html>
