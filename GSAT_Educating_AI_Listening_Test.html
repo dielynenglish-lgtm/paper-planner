@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GSAT-Style Listening Test: Educating AI (B2)</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1c2330;--card:#fff;--line:#d5dae3;--ac:#1f4e8c;--ok:#18794e;--bad:#b3261e;--mut:#5b6575}
+@media(prefers-color-scheme:dark){:root{--bg:#12161d;--fg:#e6e9ef;--card:#1b212b;--line:#2f3846;--ac:#7fb0f0;--ok:#4cc38a;--bad:#ff8a80;--mut:#9aa5b5}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 Georgia,"Noto Serif TC",serif;padding:0 14px 60px}
+main{max-width:760px;margin:0 auto}
+h1{font-size:1.6rem;margin:28px 0 4px}
+h2{font-size:1.2rem;margin:34px 0 4px;border-bottom:2px solid var(--ac);padding-bottom:4px}
+.sub,.dir{color:var(--mut);font-size:.9rem;margin:2px 0 10px}
+.pass{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ac);padding:12px 16px;border-radius:6px;margin:10px 0}
+.q{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 14px;margin:10px 0}
+.q p{margin:0 0 6px}
+label{display:block;padding:3px 6px;border-radius:4px;cursor:pointer}
+label:hover{background:var(--bg)}
+.q.ok{border-color:var(--ok)}.q.no{border-color:var(--bad)}
+.fb{font-size:.88rem;margin-top:4px;color:var(--bad)}.q.ok .fb{color:var(--ok)}
+button{font:inherit;background:var(--ac);color:var(--bg);border:0;border-radius:6px;padding:7px 16px;cursor:pointer}
+button.sec{background:none;color:var(--ac);border:1px solid var(--ac);padding:3px 12px;font-size:.9rem}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.tr{display:none;font-size:.88rem;color:var(--mut);background:var(--bg);padding:6px 10px;border-radius:4px;margin-top:6px}
+.show .tr{display:block}
+#score{position:sticky;bottom:8px;background:var(--card);border:2px solid var(--ac);border-radius:8px;padding:10px 14px;margin-top:24px;display:none}
+.act{display:flex;gap:10px;align-items:center;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+<h1>Educating AI: GSAT-Style Listening Test</h1>
+<p class="sub">Level: CEFR B2 · Senior high school · Based on “Educating AI” (CNN / Live互動英語). 10 listening items (the vocabulary, cloze and reading parts are in the Word file).</p>
+
+<h2>Listening Test (10)</h2>
+<p class="dir">Press “Play” to hear each item (uses your browser’s voice; works best in Chrome, Edge or Safari). Items 1–4: choose the best response. Items 5–7: dialogues. Items 8–10: one short talk. You may replay as needed; transcripts appear after you submit.</p>
+<div id="listen"></div>
+
+<div class="act"><button id="sub">Submit and check answers</button><button class="sec" id="rst">Reset</button></div>
+<div id="score" aria-live="polite"></div>
+</main>
+<script>
+const L="ABCD";
+// [stem, options, answerIndex]
+// listening: lines (spoken in turn), question, options, answer
+const T8=["Good morning, everyone. Today's workshop is about becoming an AI trainer. These trainers review an AI's answers, find mistakes, and explain how to fix them. Two key skills are attention to detail, because one small error can ruin an otherwise good answer, and comfort with ambiguity, which means asking for help when a situation is unclear instead of making up new rules. Now, please sit with a partner and begin the first activity."];
+const LS=[
+{s:["Could you recommend a good wine to go with this steak?"],q:"What is the best response?",o:["Sure, a red wine would be perfect.","No, I’ve never been to a steak house.","Yes, the wine was delicious.","I paid by credit card."],a:0},
+{s:["How long have you worked as a clinical consultant?"],q:"What is the best response?",o:["At the hospital downtown.","Because I like helping people.","For about twenty years.","Twice a week by bus."],a:2},
+{s:["Do you think AI will take over your job?"],q:"What is the best response?",o:["Yes, I took it over yesterday.","I hope it will only handle the boring parts.","No, I have an interview tomorrow.","It was a long report."],a:1},
+{s:["Why did the experiment fail?"],q:"What is the best response?",o:["It was at the lab.","Next Monday morning.","By a team of five.","The dataset contained too many mistakes."],a:3},
+{s:["I'm tired of grading these essays. Each one takes me almost twenty minutes.","Why not make a rubric? Then you'd know exactly what to look for, and grading would go faster.","Good idea. I'll write one tonight."],q:"What does the woman suggest?",o:["Asking students to grade each other","Making a list of grading standards","Giving fewer essays","Hiring an assistant"],a:1},
+{s:["Did you see the news about that start-up valued at ten billion dollars?","Yes! And the CEO is only twenty-two.","Amazing. I can barely manage my own schedule."],q:"What are the speakers mainly talking about?",o:["A new school policy","A stock market crash","A woman’s busy schedule","A young CEO’s success"],a:3},
+{s:["Which job do you think a computer can't do?","Making people laugh. Humor depends on personal taste, so it's hard to teach a machine.","True. Last week I told a joke and half the room just stared."],q:"What does the woman say about humor?",o:["It is easy to teach.","It is subjective.","It is boring for machines.","It is only for experts."],a:1},
+{s:T8,q:"8. Which skill means noticing a single small error?",o:["Attention to detail","Comfort with ambiguity","Written clarity","Critical thinking"],a:0},
+{s:T8,q:"9. According to the speaker, what should trainers do when a situation is unclear?",o:["Make up new rules","Ignore the problem","Ask for help","Delete the answer"],a:2},
+{s:T8,q:"10. Where is this talk most likely taking place?",o:["At a restaurant","At a hospital","At a bank","At a training workshop"],a:3}];
+
+let n=0;const keys=[];
+function render(id,arr,fn){
+  const d=document.getElementById(id);
+  arr.forEach((it,i)=>{
+    n++;const k=n;keys.push({k,a:it[2]!==undefined?it[2]:it.a});
+    const q=document.createElement("div");q.className="q";q.id="q"+k;
+    q.innerHTML=fn(it,k,i);d.appendChild(q);
+  });
+}
+const opts=(o,k)=>o.map((t,j)=>`<label><input type="radio" name="n${k}" value="${j}"> (${L[j]}) ${t}</label>`).join("");
+// listening numbering restarts visually at 1
+const ld=document.getElementById("listen");
+LS.forEach((it,i)=>{
+  n++;keys.push({k:n,a:it.a});
+  const q=document.createElement("div");q.className="q";q.id="q"+n;
+  const first=i<7||i===7;
+  const play=(i<=7)?`<button type="button" class="sec" data-i="${i}">▶ Play</button>`:`<span class="dir">(Same talk as item 8. <button type="button" class="sec" data-i="${i}">▶ Replay</button>)</span>`;
+  q.innerHTML=`<p>${i+1}. ${i>=7?"":""}${i>=7?it.q.replace(/^\d+\.\s*/,""):it.q} ${play}</p>${opts(it.o,n)}<div class="tr"><b>Transcript:</b> ${it.s.join(" / ")}</div><div class="fb"></div>`;
+  ld.appendChild(q);
+});
+let spk=null;
+function say(lines){
+  speechSynthesis.cancel();
+  lines.forEach((t,i)=>{const u=new SpeechSynthesisUtterance(t);u.lang="en-US";u.rate=.9;
+    u.pitch=lines.length>1&&i%2?1.35:1;speechSynthesis.speak(u)});
+}
+ld.addEventListener("click",e=>{const b=e.target.closest("button[data-i]");
+  if(!b)return;if(!("speechSynthesis" in window)){alert("Speech not supported. Submit to read the transcript.");return}
+  say(LS[b.dataset.i].s)});
+const sc=document.getElementById("score");
+document.getElementById("sub").onclick=()=>{
+  let tot=0,sec=[0,0,0,0];
+  keys.forEach(({k,a})=>{
+    const q=document.getElementById("q"+k),r=q.querySelector("input:checked");
+    const ok=r&&+r.value===a;if(ok)tot++;
+    q.className="q "+(ok?"ok":"no")+" show";
+    q.querySelector(".fb").textContent=ok?"✔ Correct":"✘ Answer: ("+L[a]+")";
+  });
+  sc.style.display="block";
+  sc.innerHTML=`<b>Listening score: ${tot}/10</b>`;
+};
+document.getElementById("rst").onclick=()=>{
+  speechSynthesis.cancel();
+  document.querySelectorAll("input:checked").forEach(i=>i.checked=false);
+  document.querySelectorAll(".q").forEach(q=>{q.className="q";q.querySelector(".fb").textContent=""});
+  sc.style.display="none";scrollTo(0,0);
+};
+</script>
+</body>
+</html>
